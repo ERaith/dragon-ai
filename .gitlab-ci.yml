@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build app:
+  stage: build
+  image: node:18-alpine
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+        - build
+
+unit tests:
+  stage: test
+  image: node:18-alpine
+  script:
+      - npm ci
+      - npm run test
+
+e2e tests:
+  stage: test
+  image: cypress/base
+  script:
+      - npm ci
+      - npm install -g serve
+      - npm install -g wait-on
+      - serve -s build &
+      - wait-on http://localhost:3000
+      - npm run e2e
+
+deploy review:
+  stage: deploy
+  image: alpine
+  script:
+      - echo "Deploying to review"
